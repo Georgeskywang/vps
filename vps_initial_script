@@ -8,18 +8,38 @@ while :
     echo " Initial vps script "
     echo "-------------------------------------"
     echo "[1] change root passwd"
-    echo "[2] Show files in current directory"
-    echo "[3] Show calendar"
-    echo "[4] Start editor to write letters"
+    echo "[2] add a new user"
+    echo "[3] Root Privileges"
+    echo "[4] Configure SSH and restart SSH"
     echo "[5] Exit/Stop"
     echo "======================="
     echo -n "Enter your menu choice [1-5]: "
     read yourch
     case $yourch in
-      1) echo "please enter your password" ; passwd ;;
-      2) echo "Files in `pwd`" ; ls -l ; echo "Press a key. . ." ; read ;;
-      3) cal ; echo "Press a key. . ." ; read ;;
-      4) vi ;;
+      1) echo "please enter your password" ; 'passwd' ; echo "Press a key. . ." ; read ;;
+      2) if [ $(id -u) -eq 0 ]; then
+	     read -p "Enter username : " username;
+	     read -s -p "Enter password : " password;
+	     egrep "^$username" /etc/passwd >/dev/null;
+	     if [ $? -eq 0 ]; then
+		 echo "$username exists!";
+		 exit 1;
+	     else
+		 pass=$(perl -e 'print crypt($ARGV[0], "password")' $password);
+		 useradd -m -p $pass $username ;
+		 [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!";
+	     fi
+         else
+	     echo "Only root may add a user to the system";
+	     exit 2;
+         fi
+         echo "Press a key. . ." ; read ;;
+      3) echo "$username ALL=(ALL)  ALL">>/usr/sbin/visudo;  read ;;
+      4) echo "Port 25000">>/etc/ssh/sshd_config;
+         echo "Protocol 2">>/etc/ssh/sshd_config;
+         echo "PermitRootLogin no">>/etc/ssh/sshd_config; 
+         echo "AllowUsers $username">>/etc/ssh/sshd_config; 
+         service sshd restart; read ;;
       5) exit 0 ;;
       *) echo "Opps!!! Please select choice 1,2,3,4, or 5";
          echo "Press a key. . ." ; read ;;
