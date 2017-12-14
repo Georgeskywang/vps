@@ -34,7 +34,7 @@ while :
 	     exit 2;
          fi
          echo "Press a key. . ." ; read ;;
-      3) echo "$username ALL=(ALL)  ALL">>/usr/sbin/visudo;  read ;;
+      3) echo "$username ALL=(ALL)  ALL">>/etc/sudoers;  read ;;
       4) read -p "Enter your ssh Port : " Port;
          echo "Port $Port">>/etc/ssh/sshd_config;
          echo "PermitRootLogin no">>/etc/ssh/sshd_config; 
